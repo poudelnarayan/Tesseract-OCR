@@ -3,6 +3,7 @@ import pytesseract
 from PIL import Image
 import shutil
 import os
+import re
 
 app = FastAPI()
 
