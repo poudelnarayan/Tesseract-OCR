@@ -24,7 +24,7 @@ def extract_information(text):
 
     # Extract License Number (Numbers after "License No:")
     license_number_match = re.search(
-        r"License\s*No\.?\s*[:;]?\s*([\d-]+)", text, re.IGNORECASE)
+        r"License\s*No\.?\s*[:;]?\s*([\d\-]+)", text, re.IGNORECASE)
     license_number = license_number_match.group(
         1) if license_number_match else "Not Found"
 
@@ -44,7 +44,7 @@ def extract_information(text):
 
     # Extract Citizenship Number (Numbers after "Citizenship No.:")
     citizenship_match = re.search(
-        r"Citizenship\s*No\.?\s*[:;]?\s*([\d-]+)", text, re.IGNORECASE)
+        r"Citizenship\s*No\.?\s*[:;]?\s*([\d\-]+)", text, re.IGNORECASE)
     citizenship_number = citizenship_match.group(
         1) if citizenship_match else "Not Found"
 
@@ -55,7 +55,7 @@ def extract_information(text):
 
     # Extract Date of Birth (DOB) (Numbers after "D.O:")
     dob_match = re.search(
-        r"D\.?O\.?\s*[:;,]?\s*([\d-./]+)", text, re.IGNORECASE)
+        r"D\.?O\.?\s*[:;,]?\s*([\d\-./]+)", text, re.IGNORECASE)
     dob = dob_match.group(1) if dob_match else "Not Found"
 
     # Return structured extracted data
