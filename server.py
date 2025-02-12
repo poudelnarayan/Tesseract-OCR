@@ -15,59 +15,44 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
-def extract_information(text):
-    """
-    Extracts structured information from noisy OCR text.
-    """
-    # Normalize text (remove extra spaces & new lines)
-    text = re.sub(r'\s+', ' ', text).strip()
+def extract_kyc_info(text):
+    # Initialize a dictionary to hold the extracted information
+    extracted_info = {}
 
-    # Extract License Number (Numbers after "License No:")
-    license_number_match = re.search(
-        r"License\s*No\.?\s*[:;]?\s*([\d\-]+)", text, re.IGNORECASE)
-    license_number = license_number_match.group(
-        1) if license_number_match else "Not Found"
+    # Extract the name
+    name_match = re.search(r"Name:\s*([\w\s]+)\n", text)
+    if name_match:
+        extracted_info['Name'] = name_match.group(1).strip()
 
-    # Extract First and Last Name (Two words after "Name:")
-    name_match = re.search(r"Name\s*[:;]?\s*([A-Za-z]+)\s+([A-Za-z]+)", text)
-    first_name = name_match.group(1) if name_match else "Not Found"
-    last_name = name_match.group(2) if name_match else "Not Found"
+    # Extract the address
+    address_match = re.search(r"Address:\s*([\w\s,\-]+)\n", text)
+    if address_match:
+        extracted_info['Address'] = address_match.group(1).strip()
 
-    # Extract Father's Name (Two words after "F/H Name:")
-    father_name_match = re.search(
-        r"F/H\s*Name\s*[:;]?\s*([A-Za-z]+)\s+([A-Za-z]+)", text, re.IGNORECASE)
-    father_first_name = father_name_match.group(
-        1) if father_name_match else "Not Found"
-    father_last_name = father_name_match.group(
-        2) if father_name_match else "Not Found"
-    father_name = f"{father_first_name} {father_last_name}" if father_first_name != "Not Found" else "Not Found"
+    # Extract the date of birth
+    dob_match = re.search(r"D\.O:\)\s*(\d{2}\.\d{2}\-\d{2}\-\d{4})", text)
+    if dob_match:
+        extracted_info['Date of Birth'] = dob_match.group(1).strip()
 
-    # Extract Citizenship Number (Numbers after "Citizenship No.:")
-    citizenship_match = re.search(
-        r"Citizenship\s*No\.?\s*[:;]?\s*([\d\-]+)", text, re.IGNORECASE)
-    citizenship_number = citizenship_match.group(
-        1) if citizenship_match else "Not Found"
+    # Extract the father's name
+    father_name_match = re.search(r"F/H Name:\s*\|\s*([\w\s]+)\n", text)
+    if father_name_match:
+        extracted_info['Father\'s Name'] = father_name_match.group(1).strip()
 
-    # Extract Address (Between "Address:" and ", Nepal License Office")
-    address_match = re.search(
-        r"Address\s*[:;]?\s*(.*?)\s*,\s*Nepal\s+License\s+Office", text, re.IGNORECASE)
-    address = address_match.group(1).strip() if address_match else "Not Found"
+    # Extract the citizenship number
+    citizenship_number_match = re.search(
+        r"Citizenship No\.\:\s*([\w\.\-]+)", text)
+    if citizenship_number_match:
+        extracted_info['Citizenship Number'] = citizenship_number_match.group(
+            1).strip()
 
-    # Extract Date of Birth (DOB) (Numbers after "D.O:")
-    dob_match = re.search(
-        r"D\.?O\.?\s*[:;,]?\s*([\d\-./]+)", text, re.IGNORECASE)
-    dob = dob_match.group(1) if dob_match else "Not Found"
+    # Extract the contact number
+    contact_number_match = re.search(r"Contact No\:\s*([\d]+)\s*\|", text)
+    if contact_number_match:
+        extracted_info['Contact Number'] = contact_number_match.group(
+            1).strip()
 
-    # Return structured extracted data
-    return {
-        "License Number": license_number,
-        "First Name": first_name,
-        "Last Name": last_name,
-        "Father's Name": father_name,
-        "Citizenship Number": citizenship_number,
-        "Address": address,
-        "Date of Birth": dob,
-    }
+    return extracted_info
 
 
 @app.post("/upload/")
@@ -85,7 +70,7 @@ async def upload_image(file: UploadFile = File(...)):
 
         # Log extracted text
         # Extract structured data
-        extracted_data = extract_information(extracted_text)
+        extracted_data = extract_kyc_info(extracted_text)
 
         return {
             "message": "OCR successful",
